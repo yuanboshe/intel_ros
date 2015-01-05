@@ -98,10 +98,14 @@ add_library(csvparser src/csvparser.cpp)
 
 # Irobot nodes
 add_executable(cmd_center nodes/cmd_center.cpp)
+add_dependencies(cmd_center ${PROJECT_NAME}_generate_messages_cpp)
 #add_dependencies(irobot_cmd_center ${PROJECT_NAME}_gencpp)
 target_link_libraries(cmd_center csvparser ${catkin_LIBRARIES})
 add_executable(vel_center nodes/vel_center.cpp)
 target_link_libraries(vel_center ${catkin_LIBRARIES})
+
+add_executable(focus_face nodes/focus_face.cpp)
+target_link_libraries(focus_face ${catkin_LIBRARIES})
 
 ## Declare a cpp library
 # add_library(intel_ros
