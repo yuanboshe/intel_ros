@@ -35,14 +35,6 @@ int main(int argc, char **argv)
   ros::Subscriber recogSub = ph.subscribe("/face_bias", 1, faceBiasCallback);
   pubServo = nh.advertise<sensor_msgs::JointState>("joint_states", 1);
 
-  // Get params
-//  ph.param("cmd_center/paused", paused, false);
-//  ph.param("cmd_center/linearSpeed", linearSpeed, 0.2);
-//  ph.param("cmd_center/angularSpeed", angularSpeed, 0.4);
-//  ph.param("cmd_center/author", author, std::string("center"));
-//  std::string csvPath;
-//  ph.param<std::string>("cmd_center/cmd_csv_path", csvPath, std::string("please/set/the/path.csv")); //please/set/the/path.csv
-
   lastTime = ros::Time::now();
   names.push_back("head_pan_joint");
   names.push_back("head_tilt_joint");
