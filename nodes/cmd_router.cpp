@@ -7,6 +7,7 @@
 // publishers
 ros::Publisher pubServo;
 ros::Publisher pubSpeaker;
+ros::Publisher pubFaceBias;
 
 const double panOffset = 0.5;
 const double tiltOffset = 0.5;
@@ -61,12 +62,22 @@ void gestureCallback(const std_msgs::StringConstPtr& msg)
 
   if (gGesture == "left hand: spreadfingers")
   {
-    sensor_msgs::JointState jointMsg;
-    jointMsg.header.stamp = ros::Time::now();
-    jointMsg.name = names;
-    jointMsg.position.push_back(0);
-    jointMsg.position.push_back(0);
-    pubServo.publish(jointMsg);
+//    for (int i = 0; i < 50; i ++)
+//    {
+//      sensor_msgs::JointState jointMsg;
+//      jointMsg.header.stamp = ros::Time::now();
+//      jointMsg.name = names;
+//      jointMsg.position.push_back(0);
+//      jointMsg.position.push_back(0);
+//      pubServo.publish(jointMsg);
+//      ROS_INFO("reset");
+//      usleep(200000);
+//    }
+
+//    geometry_msgs::Point rosPoint;
+//    rosPoint.x = 0.5;
+//    rosPoint.y = 0.5;
+//    pubFaceBias.publish(rosPoint);
 
     std_msgs::String voiceOutStr;
     voiceOutStr.data = "Ok, reset head position!";
@@ -191,6 +202,7 @@ int main(int argc, char **argv)
   ros::Subscriber subRecog = nh.subscribe("recognizer/output", 1, recogCallback);
   pubSpeaker = nh.advertise<std_msgs::String>("voice_synthesis", 1);
   pubServo = nh.advertise<sensor_msgs::JointState>("joint_states", 1);
+  pubFaceBias = nh.advertise<geometry_msgs::Point>("face_bias", 1);
 
   names.push_back("head_pan_joint");
   names.push_back("head_tilt_joint");
