@@ -3,7 +3,6 @@
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Int32.h>
-#include "cmd_router.h"
 
 // publishers
 ros::Publisher pubServo;
