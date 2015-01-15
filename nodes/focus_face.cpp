@@ -32,7 +32,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "foucs_face");
   ros::NodeHandle nh;
   ros::NodeHandle ph("~");
-  ros::Subscriber recogSub = ph.subscribe("/face_bias", 1, faceBiasCallback);
+  ros::Subscriber subFaceRec = ph.subscribe("/face_bias", 1, faceBiasCallback);
   pubServo = nh.advertise<sensor_msgs::JointState>("joint_states", 1);
 
   lastTime = ros::Time::now();

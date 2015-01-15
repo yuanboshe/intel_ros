@@ -107,6 +107,8 @@ target_link_libraries(vel_center ${catkin_LIBRARIES})
 add_executable(focus_face nodes/focus_face.cpp)
 target_link_libraries(focus_face ${catkin_LIBRARIES})
 
+add_executable(cmd_router nodes/cmd_router.cpp)
+target_link_libraries(cmd_router ${catkin_LIBRARIES})
 ## Declare a cpp library
 # add_library(intel_ros
 #   src/${PROJECT_NAME}/intel_ros.cpp
