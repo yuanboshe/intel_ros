@@ -1,0 +1,19 @@
+-1,command,speech,response
+0,test,测试,测试成功，我听见了！
+1,stop,停下,遵命，停止运行！
+2,stop,停止,遵命，停止运行！
+3,turn left,左转,遵命，向左转！
+4,turn right,右转,遵命，向右转！
+5,go straight,前进,遵命，前进！
+6,go straight,向前,遵命，向前行走！
+7,go straight,直走,遵命，向前直走！
+8,backward,后退,向后退，请注意！
+9,rotate left,左转弯,左转弯
+10,rotate right,右转弯,右转弯
+-1,reset speed,重置速度,重置速度
+11,hello,你好,你好
+-1,go your self,自由行走,"go ahead, do not block me!"
+12,time,什么时间,null
+13,time,现在时间,null
+14,date,什么日期,null
+15,date,现在日期,null

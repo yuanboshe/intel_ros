@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_PropertySheetDisplayName>intel_ros</_PropertySheetDisplayName>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IncludePath>C:\opt\vc11\rosdeps\hydro\x86\include;C:\opt\vc11\ros\hydro\x86\include;$(RSSDK_DIR)/Include;$(RSSDK_DIR)/Sample/Common/Include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\opt\vc11\rosdeps\hydro\x86\lib;C:\opt\vc11\ros\hydro\x86\lib;$(RSSDK_DIR)/lib/$(PlatformName);$(RSSDK_DIR)/sample/common/lib/$(PlatformName)/$(PlatformToolset);$(LibraryPath)</LibraryPath>
+    <OutDir>../../../devel/lib/intel_ros/</OutDir>
+    <IntDir>../temp/</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>ROS_BUILD_SHARED_LIBS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+	<Link Condition="'$(Configuration)'=='Debug'">
+      <AdditionalDependencies>roscpp.lib;roscpp_serialization.lib;rosconsole.lib;rostime.lib;libpxcmd_d.lib;libpxcutilsmd_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Link Condition="'$(Configuration)'=='Release'">
+      <AdditionalDependencies>roscpp.lib;roscpp_serialization.lib;rosconsole.lib;rostime.lib;libpxcmd.lib;libpxcutilsmd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ClCompile Condition="'$(Configuration)'=='Debug'">
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <ClCompile Condition="'$(Configuration)'=='Release'">
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>

@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VoiceRecognition", "VoiceRecognition\VoiceRecognition.vcxproj", "{4ADC33EC-D61F-4968-A7A5-C085606465A3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VoiceSynthesis", "VoiceSynthesis\VoiceSynthesis.vcxproj", "{6CF35781-C8DB-44ED-B679-B4FB15C29776}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4ADC33EC-D61F-4968-A7A5-C085606465A3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4ADC33EC-D61F-4968-A7A5-C085606465A3}.Debug|Win32.Build.0 = Debug|Win32
+		{4ADC33EC-D61F-4968-A7A5-C085606465A3}.Release|Win32.ActiveCfg = Release|Win32
+		{4ADC33EC-D61F-4968-A7A5-C085606465A3}.Release|Win32.Build.0 = Release|Win32
+		{6CF35781-C8DB-44ED-B679-B4FB15C29776}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6CF35781-C8DB-44ED-B679-B4FB15C29776}.Debug|Win32.Build.0 = Debug|Win32
+		{6CF35781-C8DB-44ED-B679-B4FB15C29776}.Release|Win32.ActiveCfg = Release|Win32
+		{6CF35781-C8DB-44ED-B679-B4FB15C29776}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
