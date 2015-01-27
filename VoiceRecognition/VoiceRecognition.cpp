@@ -255,7 +255,7 @@ int _tmain(int argc, char** argv)
 		throw L"Failed to start recognition";
 	}
 
-	while (true) { if (GetAsyncKeyState(VK_ESCAPE)) break; }
+	ros::waitForShutdown();
 
 	return 0;
 }
