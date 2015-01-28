@@ -22,7 +22,7 @@ int _tmain(int argc, char** argv)
 	if (!node.getParam("rgbd_collector/rate", rate))
 	{
 		ROS_WARN("Param [%s] not found.", "rgbd_collector/rate");
-		rate = 2;
+		rate = 5;
 	}
 	ROS_INFO("Set rate to [%d]", rate);
 	bool viewImage = true;
@@ -116,7 +116,10 @@ int _tmain(int argc, char** argv)
 			cv::waitKey(1);
 		}
 
+		
 		// go fetching the next sample
+		sample->color->ReleaseAccess(&pxcRgbData);
+		sample->depth->ReleaseAccess(&pxcDepthData);
 		sm->ReleaseFrame();
 
 		ROS_INFO("Pub image seq: [%d]", seq);

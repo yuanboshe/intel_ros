@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VoiceSynthesis", "VoiceSynt
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RGBDCollector", "RGBDCollector\RGBDCollector.vcxproj", "{0439F80A-3C56-4206-B831-1F0D36E16C15}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AgeEstimation", "AgeEstimation\AgeEstimation.vcxproj", "{EF8BAF5B-1429-4AF2-A678-DCB77FDE2484}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -27,6 +29,10 @@ Global
 		{0439F80A-3C56-4206-B831-1F0D36E16C15}.Debug|Win32.Build.0 = Debug|Win32
 		{0439F80A-3C56-4206-B831-1F0D36E16C15}.Release|Win32.ActiveCfg = Release|Win32
 		{0439F80A-3C56-4206-B831-1F0D36E16C15}.Release|Win32.Build.0 = Release|Win32
+		{EF8BAF5B-1429-4AF2-A678-DCB77FDE2484}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EF8BAF5B-1429-4AF2-A678-DCB77FDE2484}.Debug|Win32.Build.0 = Debug|Win32
+		{EF8BAF5B-1429-4AF2-A678-DCB77FDE2484}.Release|Win32.ActiveCfg = Release|Win32
+		{EF8BAF5B-1429-4AF2-A678-DCB77FDE2484}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
