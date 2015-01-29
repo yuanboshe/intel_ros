@@ -50,7 +50,7 @@ void test()
 
 FaceSensor* faceSensor;
 
-double gAge = 0;
+int gAge = 0;
 double gAgeNum = 0;
 
 int updateAge(int age)
@@ -149,12 +149,20 @@ int _tmain(int argc, char** argv)
 	faceSensor = new FaceSensor(modelFile, faceCascadeFile, 1);
 
 	ros::Rate rate(10);
-	bool isSpeak = FALSE;
+	bool isSpeak = TRUE;
+	RosSpeaker speaker;
 	while (ros::ok())
 	{
 
 		// TODO: pub message
-
+		if (isSpeak && gAgeNum > 30)
+		{
+			std::string str = "Hello, I think you are ";
+			str.append(boost::lexical_cast<std::string>(gAge));
+			str.append(" years old!");
+			speaker.speak(str.c_str());
+			isSpeak = FALSE;
+		}
 		ros::spinOnce();
 		rate.sleep();
 	}

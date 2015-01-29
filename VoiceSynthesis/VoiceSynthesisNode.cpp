@@ -39,7 +39,7 @@ int _tmain(int argc, char** argv)
 {
 	ros::init(argc, argv, "speaker");
 	ros::NodeHandle node;
-	ros::Subscriber sub = node.subscribe("voice_synthesis", 10, speakerCallback);
+	ros::Subscriber sub = node.subscribe("voice_synthesis", 5, speakerCallback);
 	
 	PXCSession *session = 0;
 	session = PXCSession::CreateInstance();
