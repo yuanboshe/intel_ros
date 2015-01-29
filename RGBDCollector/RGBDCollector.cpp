@@ -6,11 +6,28 @@
 #include "ros/ros.h"
 
 #include "pxcsensemanager.h"
+#include "pxcemotion.h"
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <std_msgs/Header.h>
 #include <opencv2/opencv.hpp>
+
+static WCHAR *EmotionLabels[] = {
+	L"ANGER",
+	L"CONTEMPT",
+	L"DISGUST",
+	L"FEAR",
+	L"JOY",
+	L"SADNESS",
+	L"SURPRISE"
+};
+
+static WCHAR *SentimentLabels[] = {
+	L"NEGATIVE",
+	L"POSITIVE",
+	L"NEUTRAL"
+};
 
 int _tmain(int argc, char** argv)
 {
@@ -42,6 +59,7 @@ int _tmain(int argc, char** argv)
 	// Select the color and depth streams
 	sm->EnableStream(PXCCapture::STREAM_TYPE_COLOR, 640, 480, 30);
 	sm->EnableStream(PXCCapture::STREAM_TYPE_DEPTH, 640, 480, 30);
+	sm->EnableEmotion();
 
 	// Initialize and Stream Samples
 	sm->Init();
@@ -100,6 +118,42 @@ int _tmain(int argc, char** argv)
 		rgbPub.publish(rosRgbImg);
 		depthPub.publish(rosDpthImg);
 		depthCameraInfoPub.publish(rosDepthCameraInfo);
+
+		// Emotion
+		PXCEmotion *em = sm->QueryEmotion();
+		if (em != NULL)
+		{
+			pxcI32 numFaces = em->QueryNumFaces();
+			for (pxcI32 fid = 0; fid < numFaces; fid++) 
+			{
+				// retrieve all estimation data
+				PXCEmotion::EmotionData arrData[10] = { 0 };
+				em->QueryAllEmotionData(fid, arrData);
+
+				// find the emotion with maximum 
+				int epidx = -1; pxcI32 maxscoreE = -3; pxcF32 maxscoreI = 0;
+				for (int i = 0; i<7; i++) {
+					if (arrData[i].evidence < maxscoreE)  continue;
+					if (arrData[i].intensity < maxscoreI) continue;
+					maxscoreE = arrData[i].evidence;
+					maxscoreI = arrData[i].intensity;
+					epidx = i;
+				}
+
+				int spidx = -1;
+				maxscoreE = -3; maxscoreI = 0;
+				for (int i = 0; i < 3; i++) {
+					if (arrData[7 + i].evidence  < maxscoreE) continue;
+					if (arrData[7 + i].intensity < maxscoreI) continue;
+					maxscoreE = arrData[7 + i].evidence;
+					maxscoreI = arrData[7 + i].intensity;
+					spidx = i;
+				}
+
+				// do something with the outstanding primary emotion
+				//std::wcout << "  " << EmotionLabels[epidx] << " | " << SentimentLabels[spidx] << "    ";
+			}
+		}
 
 		if (viewImage /*&& FALSE*/)
 		{
