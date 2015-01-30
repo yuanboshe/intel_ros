@@ -30,6 +30,12 @@
     <ClInclude Include="FaceSensor.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\RGBDAll\AgeEstimation.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\RGBDAll\FaceSensor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

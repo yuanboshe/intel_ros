@@ -11,7 +11,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RGBDCollector", "RGBDCollec
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AgeEstimation", "AgeEstimation\AgeEstimation.vcxproj", "{EF8BAF5B-1429-4AF2-A678-DCB77FDE2484}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ResultViewer", "ResultViewer\ResultViewer.vcxproj", "{FF46B7A2-6ADE-49A3-B4FA-56DCF840BEBF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RGBDAll", "RGBDAll\RGBDAll.vcxproj", "{B5EECDA2-A453-43DC-BF2C-8C4133D4AA6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +35,10 @@ Global
 		{EF8BAF5B-1429-4AF2-A678-DCB77FDE2484}.Debug|Win32.Build.0 = Debug|Win32
 		{EF8BAF5B-1429-4AF2-A678-DCB77FDE2484}.Release|Win32.ActiveCfg = Release|Win32
 		{EF8BAF5B-1429-4AF2-A678-DCB77FDE2484}.Release|Win32.Build.0 = Release|Win32
-		{FF46B7A2-6ADE-49A3-B4FA-56DCF840BEBF}.Debug|Win32.ActiveCfg = Debug|Win32
-		{FF46B7A2-6ADE-49A3-B4FA-56DCF840BEBF}.Debug|Win32.Build.0 = Debug|Win32
-		{FF46B7A2-6ADE-49A3-B4FA-56DCF840BEBF}.Release|Win32.ActiveCfg = Release|Win32
-		{FF46B7A2-6ADE-49A3-B4FA-56DCF840BEBF}.Release|Win32.Build.0 = Release|Win32
+		{B5EECDA2-A453-43DC-BF2C-8C4133D4AA6D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B5EECDA2-A453-43DC-BF2C-8C4133D4AA6D}.Debug|Win32.Build.0 = Debug|Win32
+		{B5EECDA2-A453-43DC-BF2C-8C4133D4AA6D}.Release|Win32.ActiveCfg = Release|Win32
+		{B5EECDA2-A453-43DC-BF2C-8C4133D4AA6D}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

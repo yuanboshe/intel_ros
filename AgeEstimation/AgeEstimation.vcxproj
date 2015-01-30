@@ -95,6 +95,8 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\RGBDAll\AgeEstimation.h" />
+    <ClInclude Include="..\RGBDAll\FaceSensor.h" />
     <ClInclude Include="AgeEstimation.h" />
     <ClInclude Include="FaceSensor.h" />
     <ClInclude Include="stdafx.h" />
