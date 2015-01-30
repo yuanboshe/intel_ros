@@ -10,6 +10,7 @@
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
+#include <std_msgs/String.h>
 #include <std_msgs/Header.h>
 #include <opencv2/opencv.hpp>
 
@@ -21,6 +22,16 @@ static WCHAR *EmotionLabels[] = {
 	L"JOY",
 	L"SADNESS",
 	L"SURPRISE"
+};
+
+static CHAR *EmotionLabelsA[] = {
+	"ANGER",
+	"CONTEMPT",
+	"DISGUST",
+	"FEAR",
+	"JOY",
+	"SADNESS",
+	"SURPRISE"
 };
 
 static WCHAR *SentimentLabels[] = {
@@ -51,6 +62,7 @@ int _tmain(int argc, char** argv)
 	ros::Publisher depthPub = node.advertise<sensor_msgs::Image>("/camera/depth/image_raw", 1);
 	ros::Publisher rgbPub = node.advertise<sensor_msgs::Image>("/camera/rgb/image_raw", 1);
 	ros::Publisher depthCameraInfoPub = node.advertise<sensor_msgs::CameraInfo>("/camera/depth/camera_info", 1);
+	ros::Publisher emotionPub = node.advertise<std_msgs::String>("/emotion", 1);
 	ros::Rate loopRate(rate); // pub rate at 20Hz;
 
 	// Create a PXCSenseManager instance
@@ -152,6 +164,9 @@ int _tmain(int argc, char** argv)
 
 				// do something with the outstanding primary emotion
 				//std::wcout << "  " << EmotionLabels[epidx] << " | " << SentimentLabels[spidx] << "    ";
+				std_msgs::String emotionStr;
+				emotionStr.data = EmotionLabelsA[epidx];
+				emotionPub.publish<std_msgs::String>(emotionStr);
 			}
 		}
 
