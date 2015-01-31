@@ -6,6 +6,7 @@
 
 #include "pxcsensemanager.h"
 #include "pxcemotion.h"
+#include "pxchandconfiguration.h"
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
@@ -26,13 +27,13 @@ static WCHAR *EmotionLabels[] = {
 };
 
 static CHAR *EmotionLabelsA[] = {
-	"ANGER",
-	"CONTEMPT",
-	"DISGUST",
-	"FEAR",
-	"JOY",
-	"SADNESS",
-	"SURPRISE"
+	"Anger",
+	"Contempt",
+	"Disgust",
+	"Fear",
+	"Joy",
+	"Sandness",
+	"Surprise"
 };
 
 static WCHAR *SentimentLabels[] = {
@@ -99,25 +100,63 @@ int _tmain(int argc, char** argv)
 	ros::Publisher emotionPub = node.advertise<std_msgs::String>("/emotion", 1);
 	ros::Rate loopRate(rate); // pub rate at 20Hz;
 
+	// Params
+	bool enableRGB = TRUE;
+	bool enableDepth = TRUE;
+	bool enableAge = TRUE;
+	bool enableEmotion = TRUE;
+	bool enableGesture = TRUE;
+	bool enableVideo = FALSE;
+
 	// Create a PXCSenseManager instance
 	PXCSenseManager *sm = PXCSenseManager::CreateInstance();
 
 	// Select the color and depth streams
-	sm->EnableStream(PXCCapture::STREAM_TYPE_COLOR, 640, 480, 30);
-	sm->EnableStream(PXCCapture::STREAM_TYPE_DEPTH, 640, 480, 30);
-	sm->EnableEmotion();
+	if (enableRGB | enableAge | enableEmotion)
+	{
+		sm->EnableStream(PXCCapture::STREAM_TYPE_COLOR, 640, 480, 30);
+	}
+	if (enableDepth)
+	{
+		sm->EnableStream(PXCCapture::STREAM_TYPE_DEPTH, 640, 480, 30);
+	}
+	if (enableEmotion)
+	{
+		sm->EnableEmotion();
+	}
+
+	// Gestures
+	PXCHandModule* handModule = NULL;
+	PXCHandData* handAnalysis = NULL;
+	if (enableGesture)
+	{
+		sm->EnableHand(0);
+		handModule = sm->QueryHand();
+		handAnalysis = handModule->CreateOutput();
+
+		// Hand Module Configuration
+		PXCHandConfiguration *handConfig = handModule->CreateActiveConfiguration();
+		handConfig->EnableAllAlerts();
+		handConfig->EnableAllGestures();
+		//handConfig->EnableSegmentationImage(true);
+		handConfig->ApplyChanges();
+		handConfig->Update();
+	}
 
 	// Initialize and Stream Samples
-	sm->Init();
+	pxcStatus status = sm->Init();
+	if (status < PXC_STATUS_NO_ERROR) throw L"pxc init error!";
 
-	// Age estimation
-	FaceSensor::init();
+	if (enableAge)
+	{
+		// Age estimation
+		FaceSensor::init();
 
-	const char* faceCascadeFile = "C:/opt/vc11/lamda/lib/haarcascade_frontalface_alt.xml";
-	const char* modelFile = "c:/opt/vc11/lamda/lib/aging_model.mat";
-	cv::Mat im = imread("c:/opt/vc11/lamda/lib/face.jpg");
+		const char* faceCascadeFile = "C:/opt/vc11/lamda/lib/haarcascade_frontalface_alt.xml";
+		const char* modelFile = "c:/opt/vc11/lamda/lib/aging_model.mat";
 
-	faceSensor = new FaceSensor(modelFile, faceCascadeFile, 1);
+		faceSensor = new FaceSensor(modelFile, faceCascadeFile, 1);
+	}
 
 	// loop
 	UINT32 seq = 0;
@@ -127,7 +166,11 @@ int _tmain(int argc, char** argv)
 	bool isViewAge = TRUE;
 
 	// videos
-	VideoWriter writer("VideoTest.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5, Size(640, 480));
+	VideoWriter writer;
+	if (enableVideo)
+	{
+		writer.open("VideoTest.avi", CV_FOURCC('M', 'J', 'P', 'G'), 5, Size(640, 480));
+	}
 
 	while (ros::ok())
 	{
@@ -231,6 +274,49 @@ int _tmain(int argc, char** argv)
 			}
 		}
 
+		// Gestures
+		if (enableGesture && handModule)
+		{
+			handAnalysis->Update();
+			pxcI32 numOfGesture = handAnalysis->QueryFiredGesturesNumber();
+
+			std::wostringstream s;
+			s << "Frame ";
+			std::wstring gestureStatus(s.str());
+
+			if (numOfGesture > 0)
+			{
+				//Iterate fired gestures
+				for (int i = 0; i < numOfGesture; i++)
+				{
+					//Get fired gesture data
+					PXCHandData::GestureData gestureData;
+					if (handAnalysis->QueryFiredGestureData(i, gestureData) == PXC_STATUS_NO_ERROR)
+					{
+						//Get hand data related to fired gesture
+						PXCHandData::IHand* handData;
+						if (handAnalysis->QueryHandDataById(gestureData.handId, handData) == PXC_STATUS_NO_ERROR)
+						{
+							std::wstring str(gestureData.name);
+							if (handData->QueryBodySide() == PXCHandData::BodySideType::BODY_SIDE_LEFT)
+							{
+								gestureStatus += L",Left Hand Gesture: ";
+								gestureStatus += str;
+								gestureStatus += L"\n";
+							}
+							else if (handData->QueryBodySide() == PXCHandData::BodySideType::BODY_SIDE_RIGHT)
+							{
+								gestureStatus += L"Right Hand Gesture: ";
+								gestureStatus += str;
+								gestureStatus += L"\n";
+							}
+						}
+					}
+				}
+				std::wcout << gestureStatus << std::endl;
+			}
+		}
+
 		// Age estimation
 		std::vector<FaceBiometrics> fbs = std::vector<FaceBiometrics>();
 
@@ -268,7 +354,10 @@ int _tmain(int argc, char** argv)
 				//gFaceRect = faceRect;
 				gNum = 0;
 
-				writer << im;
+				if (enableVideo)
+				{
+					writer << im;
+				}
 
 			}
 			else if (isViewRGB)
@@ -298,9 +387,14 @@ int _tmain(int argc, char** argv)
 		ROS_INFO("Pub image seq: [%d]", seq);
 		loopRate.sleep();
 		seq++;
-	}
+	} // End while
 
 	// Close down
+	if (enableGesture && handAnalysis != NULL)
+	{
+		handAnalysis->Release();
+	}
+	sm->Close();
 	sm->Release();
 
 	ros::waitForShutdown();
