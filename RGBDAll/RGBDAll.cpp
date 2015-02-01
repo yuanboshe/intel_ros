@@ -12,9 +12,13 @@
 #include <sensor_msgs/image_encodings.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Header.h>
+#include <geometry_msgs/Point.h>
 #include <opencv2/opencv.hpp>
 #include <boost/lexical_cast.hpp>
 #include "FaceSensor.h"
+
+//ATL
+#include <atlbase.h>
 
 static WCHAR *EmotionLabels[] = {
 	L"ANGER",
@@ -45,11 +49,12 @@ static WCHAR *SentimentLabels[] = {
 FaceSensor* faceSensor;
 
 int gAge = 0;
-double gAgeNum = 0;
+int gAgeNum = 0;
+int gLastAge = 0;
 
 int updateAge(int age)
 {
-	const int bias = 10;
+	const int bias = 40;
 	const int minIgnore = 20;
 
 	if (gAgeNum == 0)
@@ -57,11 +62,17 @@ int updateAge(int age)
 		gAge = age;
 		gAgeNum = 1;
 	}
-	else if (gAgeNum < minIgnore || abs(gAge - age) < bias)
+	else if (gAgeNum < minIgnore)
 	{
 		// È¡¾ùÖµ
-		gAge = (gAgeNum / (gAgeNum + 1.0)) * gAge + age / (gAgeNum + 1.0);
+		gAge = ((double)gAgeNum / ((double)gAgeNum + 1.0)) * (double)gAge + age / ((double)gAgeNum + 1.0);
 		gAgeNum++;
+	}
+	else if (abs(gAge - age) < bias)
+	{
+		double a = gAge;
+		double b = age;
+		gAge = 0.9 * a + 0.1 * b;
 	}
 	else
 	{
@@ -70,10 +81,6 @@ int updateAge(int age)
 
 	return gAge;
 }
-
-std::string gEmotionStr;
-cv::Rect gFaceRect;
-int gNum = 0;
 
 int _tmain(int argc, char** argv)
 {
@@ -85,7 +92,7 @@ int _tmain(int argc, char** argv)
 	if (!node.getParam("rgbd_collector/rate", rate))
 	{
 		ROS_WARN("Param [%s] not found.", "rgbd_collector/rate");
-		rate = 5;
+		rate = 10;
 	}
 	ROS_INFO("Set rate to [%d]", rate);
 	bool viewImage = true;
@@ -98,6 +105,7 @@ int _tmain(int argc, char** argv)
 	ros::Publisher rgbPub = node.advertise<sensor_msgs::Image>("/camera/rgb/image_raw", 1);
 	ros::Publisher depthCameraInfoPub = node.advertise<sensor_msgs::CameraInfo>("/camera/depth/camera_info", 1);
 	ros::Publisher emotionPub = node.advertise<std_msgs::String>("/emotion", 1);
+	ros::Publisher faceBiasPub = node.advertise<geometry_msgs::Point>("/face_bias", 1);
 	ros::Rate loopRate(rate); // pub rate at 20Hz;
 
 	// Params
@@ -128,6 +136,9 @@ int _tmain(int argc, char** argv)
 	// Gestures
 	PXCHandModule* handModule = NULL;
 	PXCHandData* handAnalysis = NULL;
+	std::wstring gestureStr;
+	std::wstring leftRightHand;
+	int handCount = 0;
 	if (enableGesture)
 	{
 		sm->EnableHand(0);
@@ -137,7 +148,13 @@ int _tmain(int argc, char** argv)
 		// Hand Module Configuration
 		PXCHandConfiguration *handConfig = handModule->CreateActiveConfiguration();
 		handConfig->EnableAllAlerts();
-		handConfig->EnableAllGestures();
+		handConfig->EnableGesture(L"spreadfingers");
+		//handConfig->EnableGesture(L"fist");
+		handConfig->EnableGesture(L"thumb_down");
+		handConfig->EnableGesture(L"thumb_up");
+		handConfig->EnableGesture(L"v_sign");
+		handConfig->EnableGesture(L"wave");
+		handConfig->EnableNormalizedJoints(TRUE);
 		//handConfig->EnableSegmentationImage(true);
 		handConfig->ApplyChanges();
 		handConfig->Update();
@@ -147,13 +164,17 @@ int _tmain(int argc, char** argv)
 	pxcStatus status = sm->Init();
 	if (status < PXC_STATUS_NO_ERROR) throw L"pxc init error!";
 
+	// Age
+	std::string emotionStr;
+	cv::Rect faceRect;
+	int ageCount = 0;
 	if (enableAge)
 	{
 		// Age estimation
 		FaceSensor::init();
 
 		const char* faceCascadeFile = "C:/opt/vc11/lamda/lib/haarcascade_frontalface_alt.xml";
-		const char* modelFile = "c:/opt/vc11/lamda/lib/aging_model.mat";
+		const char* modelFile = "C:/opt/vc11/lamda/lib/aging_model.mat";
 
 		faceSensor = new FaceSensor(modelFile, faceCascadeFile, 1);
 	}
@@ -161,9 +182,11 @@ int _tmain(int argc, char** argv)
 	// loop
 	UINT32 seq = 0;
 	bool isViewRGB = TRUE;
-	bool isViewDepth = TRUE;
+	bool isViewDepth = FALSE;
 	bool isViewEmotion = TRUE;
 	bool isViewAge = TRUE;
+	bool isViewHands = TRUE;
+	bool isViewGesture = TRUE;
 
 	// videos
 	VideoWriter writer;
@@ -226,6 +249,14 @@ int _tmain(int argc, char** argv)
 		depthPub.publish(rosDpthImg);
 		depthCameraInfoPub.publish(rosDepthCameraInfo);
 
+		// The image passed to FaceSensor must be a gary image.
+		cv::Mat im(pxcRgbInfo.height, pxcRgbInfo.width, CV_8UC3);
+		cv::Mat gravyIm(im.size(), CV_8UC1);
+
+		memcpy(im.data, pxcRgbData.planes[0], sizeRgb);
+
+		cvtColor(im, gravyIm, CV_BGR2GRAY);
+
 		// Emotion
 		PXCEmotion *em = sm->QueryEmotion();
 		if (em != NULL)
@@ -248,14 +279,15 @@ int _tmain(int argc, char** argv)
 				}
 
 				PXCRectI32 rect = arrData->rectangle;
-				gFaceRect.x = rect.x;
-				gFaceRect.y = rect.y;
-				gFaceRect.height = rect.h;
-				gFaceRect.width = rect.w;
+				faceRect.x = rect.x;
+				faceRect.y = rect.y;
+				faceRect.height = rect.h;
+				faceRect.width = rect.w;
 
 				int spidx = -1;
 				maxscoreE = -3; maxscoreI = 0;
-				for (int i = 0; i < 3; i++) {
+				for (int i = 0; i < 3; i++) 
+				{
 					if (arrData[7 + i].evidence  < maxscoreE) continue;
 					if (arrData[7 + i].intensity < maxscoreI) continue;
 					maxscoreE = arrData[7 + i].evidence;
@@ -263,14 +295,23 @@ int _tmain(int argc, char** argv)
 					spidx = i;
 				}
 
-				// do something with the outstanding primary emotion
-				//std::wcout << "  " << EmotionLabels[epidx] << " | " << SentimentLabels[spidx] << "    ";
-				std_msgs::String emotionStr;
-				emotionStr.data = EmotionLabelsA[epidx];
-				emotionPub.publish<std_msgs::String>(emotionStr);
+				std_msgs::String rosEmotionStr;
+				rosEmotionStr.data = EmotionLabelsA[epidx];
+				emotionPub.publish<std_msgs::String>(rosEmotionStr);
 
-				gEmotionStr.clear();
-				gEmotionStr.append(EmotionLabelsA[epidx]);
+				emotionStr.clear();
+				emotionStr.append(EmotionLabelsA[epidx]);
+				ageCount = 0;
+
+				// pub face center
+				int x = faceRect.x + faceRect.width / 2;
+				int y = faceRect.y + faceRect.height / 2;
+				geometry_msgs::Point faceBias;
+				faceBias.x = (double)x / (double)im.cols;
+				faceBias.y = (double)y / (double)im.rows;
+				faceBiasPub.publish(faceBias);
+
+				std::cout << "FaceBias x = [" << faceBias.x << "] y = [" << faceBias.y << "]" << std::endl;
 			}
 		}
 
@@ -279,10 +320,6 @@ int _tmain(int argc, char** argv)
 		{
 			handAnalysis->Update();
 			pxcI32 numOfGesture = handAnalysis->QueryFiredGesturesNumber();
-
-			std::wostringstream s;
-			s << "Frame ";
-			std::wstring gestureStatus(s.str());
 
 			if (numOfGesture > 0)
 			{
@@ -297,86 +334,148 @@ int _tmain(int argc, char** argv)
 						PXCHandData::IHand* handData;
 						if (handAnalysis->QueryHandDataById(gestureData.handId, handData) == PXC_STATUS_NO_ERROR)
 						{
-							std::wstring str(gestureData.name);
+							gestureStr = gestureData.name;
 							if (handData->QueryBodySide() == PXCHandData::BodySideType::BODY_SIDE_LEFT)
 							{
-								gestureStatus += L",Left Hand Gesture: ";
-								gestureStatus += str;
-								gestureStatus += L"\n";
+								leftRightHand = L"left hand: ";
 							}
 							else if (handData->QueryBodySide() == PXCHandData::BodySideType::BODY_SIDE_RIGHT)
 							{
-								gestureStatus += L"Right Hand Gesture: ";
-								gestureStatus += str;
-								gestureStatus += L"\n";
+								leftRightHand = L"right hand: ";
 							}
+							handCount = 0;
 						}
 					}
 				}
-				std::wcout << gestureStatus << std::endl;
 			}
 		}
 
 		// Age estimation
 		std::vector<FaceBiometrics> fbs = std::vector<FaceBiometrics>();
 
-		// The image passed to FaceSensor must be a gary image.
-		cv::Mat im(pxcRgbInfo.height, pxcRgbInfo.width, CV_8UC3);
-		cv::Mat gravyIm(im.size(), CV_8UC1);
-
-		memcpy(im.data, pxcRgbData.planes[0], sizeRgb);
-
-		cvtColor(im, gravyIm, CV_BGR2GRAY);
-
 		// Analyse this image
 		faceSensor->analyse(gravyIm, fbs);
 
 		if (fbs.size() == 1)
 		{
-			int age = updateAge(fbs[0].getAge());
+			gLastAge = fbs[0].getAge();
+			updateAge(gLastAge);
 		}
 
-		if (isViewRGB || isViewDepth || isViewEmotion || isViewAge)
+		if (isViewHands)
 		{
-			if (isViewEmotion || isViewAge)
+			const int rgbBiasX = 40;
+			const int rgbBiasY = 30;
+			PXCHandData::JointData nodes[2][PXCHandData::NUMBER_OF_JOINTS] = {};
+
+			//Iterate hands
+			for (pxcI32 i = 0; i < handAnalysis->QueryNumberOfHands(); i++)
 			{
-				// Show the results.
-				//cv::Rect faceRect = fbs[0].getLocation();
-				cv::Rect faceRect = gFaceRect;
-
-				rectangle(im, faceRect, Scalar(255, 255, 255), 3);
-				std::string ageStr("Age: ");
-				ageStr.append(boost::lexical_cast<std::string>(gAge));
-				putText(im, ageStr, cv::Point(faceRect.x, faceRect.y), CV_FONT_HERSHEY_COMPLEX_SMALL, 1, Scalar(255, 0, 0), 2);
-				putText(im, gEmotionStr, cv::Point(faceRect.x, faceRect.y + 20), CV_FONT_HERSHEY_COMPLEX_SMALL, 1, Scalar(0, 0, 255), 2);
-
-				cv::imshow("RGB", im);
-				//gFaceRect = faceRect;
-				gNum = 0;
-
-				if (enableVideo)
+				//Get hand by time of appearence
+				PXCHandData::IHand* handData;
+				if (handAnalysis->QueryHandData(PXCHandData::AccessOrderType::ACCESS_ORDER_BY_TIME, i, handData) == PXC_STATUS_NO_ERROR)
 				{
-					writer << im;
+					PXCHandData::JointData jointData;
+					//Iterate Joints
+					for (int j = 0; j < PXCHandData::NUMBER_OF_JOINTS; j++)
+					{
+						handData->QueryNormalizedJoint((PXCHandData::JointType)j, jointData);
+						nodes[i][j] = jointData;
+					}
 				}
-
-			}
-			else if (isViewRGB)
-			{
-				cv::Mat rgbImg(pxcRgbInfo.height, pxcRgbInfo.width, CV_8UC3);
-				memcpy(rgbImg.data, pxcRgbData.planes[0], pxcRgbInfo.width * pxcRgbInfo.height * 3 * sizeof(uchar));
-				cv::imshow("RGB", rgbImg);
-			}
-			
-			if (isViewDepth)
-			{
-				cv::Mat depthImg(pxcDepthInfo.height, pxcDepthInfo.width, CV_16UC1);
-				memcpy(depthImg.data, pxcDepthData.planes[0], pxcDepthInfo.width * pxcDepthInfo.height * sizeof(uint16_t));
-				depthImg.convertTo(depthImg, CV_8UC1);
-				cv::imshow("Depth", depthImg);
 			}
 
-			cv::waitKey(1);
+			for (int i = 0; i < 2; ++i)
+			{
+
+				int wristX = (int)nodes[i][0].positionImage.x + rgbBiasX;
+				int wristY = (int)nodes[i][0].positionImage.y + rgbBiasY;
+
+				cv::Point lastJoint = cv::Point(wristX, wristY);
+
+				//Draw Bones
+				if (true)
+				{
+					for (int j = 1; j < PXCHandData::NUMBER_OF_JOINTS; ++j)
+					{
+						if (nodes[i][j].confidence == 0) continue;
+
+						int x = (int)nodes[i][j].positionImage.x + rgbBiasX;
+						int y = (int)nodes[i][j].positionImage.y + rgbBiasY;
+
+						if (j == 2 || j == 6 || j == 10 || j == 14 || j == 18)
+						{
+							lastJoint = cv::Point(wristX, wristY);
+							circle(im, lastJoint, 2, cv::Scalar(0, 0, 255));
+						}
+
+						cv::Point currentJoint = cv::Point(x, y);
+						line(im, lastJoint, currentJoint, cv::Scalar(155, 0, 0, 0.2), 4);
+						circle(im, currentJoint, 5, cv::Scalar(0, 255, 0));
+
+						lastJoint = currentJoint;
+
+					}//end for joints
+				}
+			}//end if jointNodes
 		}
+
+		if (ageCount < 5 && (isViewEmotion || isViewAge))
+		{
+			// Show the results.
+			//cv::Rect faceRect = fbs[0].getLocation();
+
+			rectangle(im, faceRect, Scalar(255, 255, 255), 3);
+			std::string ageStr("Age: ");
+			ageStr.append(boost::lexical_cast<std::string>(gAge));
+			putText(im, ageStr, cv::Point(faceRect.x, faceRect.y), CV_FONT_HERSHEY_COMPLEX_SMALL, 1, Scalar(255, 0, 0), 2);
+			putText(im, emotionStr, cv::Point(faceRect.x, faceRect.y + 20), CV_FONT_HERSHEY_COMPLEX_SMALL, 1, Scalar(0, 0, 255), 2);
+
+			ageCount++;
+
+			ageStr = "Last age: ";
+			ageStr.append(boost::lexical_cast<std::string>(gLastAge));
+			putText(im, ageStr, cv::Point(10, 20), CV_FONT_HERSHEY_COMPLEX_SMALL, 1, Scalar(0, 255, 255), 1);
+
+			int x = faceRect.x + faceRect.width / 2;
+			int y = faceRect.y + faceRect.height / 2;
+			cv::circle(im, cv::Point(x, y), 2, cv::Scalar(0, 200, 200), 2);
+		}
+		else if (ageCount >= 5)
+		{
+			gAge = 0;
+			gAgeNum = 0;
+			gLastAge = 0;
+		}
+
+		if (isViewGesture && handCount < 5)
+		{
+			std::string str(ATL::CW2A(leftRightHand.c_str()));
+			putText(im, str, cv::Point(10, 40), CV_FONT_HERSHEY_COMPLEX_SMALL, 1, Scalar(0, 255, 255), 1);
+			str = ATL::CW2A(gestureStr.c_str());
+			putText(im, str, cv::Point(10, 60), CV_FONT_HERSHEY_COMPLEX_SMALL, 1, Scalar(0, 255, 255), 1);
+
+			handCount++;
+		}
+
+		if (enableVideo)
+		{
+			writer << im;
+		}
+
+		if (isViewDepth)
+		{
+			cv::Mat depthImg(pxcDepthInfo.height, pxcDepthInfo.width, CV_16UC1);
+			memcpy(depthImg.data, pxcDepthData.planes[0], pxcDepthInfo.width * pxcDepthInfo.height * sizeof(uint16_t));
+			depthImg.convertTo(depthImg, CV_8UC1);
+			cv::imshow("Depth", depthImg);
+		}
+
+		if (isViewRGB)
+		{
+			cv::imshow("RGB", im);
+		}
+		cv::waitKey(1);
 
 
 		// go fetching the next sample
@@ -390,15 +489,16 @@ int _tmain(int argc, char** argv)
 	} // End while
 
 	// Close down
+	faceSensor->close();
 	if (enableGesture && handAnalysis != NULL)
 	{
 		handAnalysis->Release();
 	}
 	sm->Close();
 	sm->Release();
+	ROS_INFO("rgbd end!");
 
-	ros::waitForShutdown();
-
+	//ros::waitForShutdown();
 	return 0;
 }
 
