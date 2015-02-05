@@ -46,7 +46,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>../../../devel/lib/intel_ros/</OutDir>
-    <IntDir>../temp/</IntDir>
+    <IntDir>../temp/$(ProjectName)</IntDir>
     <TargetName>age_estimation</TargetName>
     <IncludePath>C:\Program Files %28x86%29\MATLAB\MATLAB Compiler Runtime\v81\extern\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\opt\vc11\lamda\lib;C:\Program Files %28x86%29\MATLAB\MATLAB Compiler Runtime\v81\extern\lib\win32\microsoft;$(LibraryPath)</LibraryPath>
@@ -54,7 +54,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../devel/lib/intel_ros/</OutDir>
-    <IntDir>../temp/</IntDir>
+    <IntDir>../temp/$(ProjectName)</IntDir>
     <TargetName>age_estimation</TargetName>
     <IncludePath>..\common;C:\Program Files %28x86%29\MATLAB\MATLAB Compiler Runtime\v81\extern\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\opt\vc11\lamda\lib;C:\Program Files %28x86%29\MATLAB\MATLAB Compiler Runtime\v81\extern\lib\win32\microsoft;$(LibraryPath)</LibraryPath>

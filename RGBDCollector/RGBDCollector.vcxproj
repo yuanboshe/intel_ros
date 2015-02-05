@@ -46,13 +46,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>../../../devel/lib/intel_ros/</OutDir>
-    <IntDir>../temp/</IntDir>
+    <IntDir>../temp/$(ProjectName)</IntDir>
     <TargetName>rgbd_collector</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../devel/lib/intel_ros/</OutDir>
-    <IntDir>../temp/</IntDir>
+    <IntDir>../temp/$(ProjectName)</IntDir>
     <TargetName>rgbd_collector</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

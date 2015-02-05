@@ -45,11 +45,13 @@
     <LinkIncremental>true</LinkIncremental>
     <TargetName>voice_rec</TargetName>
     <IncludePath>../common;$(IncludePath)</IncludePath>
+    <IntDir>../temp/$(ProjectName)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>voice_rec</TargetName>
     <IncludePath>../common;$(IncludePath)</IncludePath>
+    <IntDir>../temp/$(ProjectName)</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
