@@ -32,6 +32,11 @@ MyVoiceSynthesis* speaker;
 
 void speakerCallback(const std_msgs::String::ConstPtr& msg)
 {
+	if (msg->data == "")
+	{
+		ROS_WARN("Empty data!");
+		return;
+	}
 	speaker->speak(msg->data.c_str());
 }
 

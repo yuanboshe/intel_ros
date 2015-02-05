@@ -74,7 +74,7 @@ void PXCAPI VoiceRecognition::OnRecognition(const PXCSpeechRecognition::Recognit
 		t = time(NULL);
 		localtime_s(&local, &t);
 		gmtime_s(&gmt, &t);
-		strftime(buf, 128, "现在的时间是%X", &gmt);
+		strftime(buf, 128, "Current time is %X", &gmt);
 		speaker_.speak(buf);
 	}
 	else if ("date" == command)
@@ -84,7 +84,7 @@ void PXCAPI VoiceRecognition::OnRecognition(const PXCSpeechRecognition::Recognit
 		char buf[128] = { 0 };
 		t = time(NULL);
 		gmtime_s(&gmt, &t);
-		strftime(buf, 128, "现在的日期是%x", &gmt);
+		strftime(buf, 128, "Current date is %x", &gmt);
 		speaker_.speak(buf);
 	}
 	else
@@ -171,11 +171,15 @@ int _tmain(int argc, char** argv)
 	ros::init(argc, argv, "voice_recognition");
 	ros::NodeHandle node;
 	ros::NodeHandle ph("~");
+
+	// params
 	std::string path;
 	ph.param<std::string>("cmd_csv_path", path, "../common/commands.csv");
-	std::cout << path.c_str() << std::endl;
+	ROS_INFO("Param set cmd_csv_path to [%s]", path);
+
 	int device_id = 0;
 	ph.param<int>("device_id", device_id, 0);
+	ROS_INFO("Param set device_id to [%d]", device_id);
 
 	// Create session
 	PXCSession* session = PXCSession::CreateInstance();
@@ -192,7 +196,6 @@ int _tmain(int argc, char** argv)
 	std::vector<PXCAudioSource::DeviceInfo> sources = descList->sources;
 	std::vector<std::wstring> modules = descList->modules;
 	std::vector<std::wstring> languages = descList->languages;
-
 
 	int size = sources.size();
 	for (int i = 0; i < size; i++)

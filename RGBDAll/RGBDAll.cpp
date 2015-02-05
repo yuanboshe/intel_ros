@@ -12,6 +12,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Header.h>
+#include <std_msgs/Int32.h>
 #include <geometry_msgs/Point.h>
 #include <opencv2/opencv.hpp>
 #include <boost/lexical_cast.hpp>
@@ -84,37 +85,60 @@ int updateAge(int age)
 
 int _tmain(int argc, char** argv)
 {
-	ros::init(argc, argv, "rgbd_collector");
-	ros::NodeHandle node;
+	ros::init(argc, argv, "rgbd_all");
+	ros::NodeHandle nh;
 	ros::NodeHandle ph("~");
 
+	// params
 	int rate;
-	if (!node.getParam("rgbd_collector/rate", rate))
-	{
-		ROS_WARN("Param [%s] not found.", "rgbd_collector/rate");
-		rate = 10;
-	}
-	ROS_INFO("Set rate to [%d]", rate);
-	bool viewImage = true;
-	if (!node.getParam("rgbd_collector/viewImage", viewImage))
-	{
-		ROS_WARN("Param [%s] not found.", "rgbd_collector/viewImage");
-	}
-	ROS_INFO("View image [%s]", viewImage ? "true" : "false");
-	ros::Publisher depthPub = node.advertise<sensor_msgs::Image>("/camera/depth/image_raw", 1);
-	ros::Publisher rgbPub = node.advertise<sensor_msgs::Image>("/camera/rgb/image_raw", 1);
-	ros::Publisher depthCameraInfoPub = node.advertise<sensor_msgs::CameraInfo>("/camera/depth/camera_info", 1);
-	ros::Publisher emotionPub = node.advertise<std_msgs::String>("/emotion", 1);
-	ros::Publisher faceBiasPub = node.advertise<geometry_msgs::Point>("/face_bias", 1);
-	ros::Rate loopRate(rate); // pub rate at 20Hz;
+	ph.param<int>("rate", rate, 10);
+	ROS_INFO("Param set rate to [%d]", rate);
 
-	// Params
-	bool enableRGB = TRUE;
-	bool enableDepth = TRUE;
-	bool enableAge = TRUE;
-	bool enableEmotion = TRUE;
-	bool enableGesture = TRUE;
-	bool enableVideo = FALSE;
+	std::string age_model_file;
+	ph.param<std::string>("age_model_file", age_model_file, "C:/opt/vc11/lamda/lib/aging_model.mat");
+	ROS_INFO("Param set age_model_file to [%s]", age_model_file);
+
+	std::string face_cascade_file;
+	ph.param<std::string>("face_cascade_file", face_cascade_file, "C:/opt/vc11/lamda/lib/haarcascade_frontalface_alt.xml");
+	ROS_INFO("Param set face_cascade_file to [%s]", face_cascade_file);
+
+	bool viewImage;
+	ph.param<bool>("view_image", viewImage, true);
+	ROS_INFO("Param set view_image [%d]", viewImage);
+
+	bool enableRGB;
+	ph.param<bool>("enable_rgb", enableRGB, true);
+	ROS_INFO("Param set enable_rgb [%d]", enableRGB);
+
+	bool enableDepth;
+	ph.param<bool>("enable_depth", enableDepth, true);
+	ROS_INFO("Param set enable_depth [%d]", enableDepth);
+
+	bool enableAge;
+	ph.param<bool>("enable_age", enableAge, true);
+	ROS_INFO("Param set enable_age [%d]", enableAge);
+
+	bool enableEmotion;
+	ph.param<bool>("enable_emotion", enableEmotion, true);
+	ROS_INFO("Param set enable_emotion [%d]", enableEmotion);
+
+	bool enableGesture;
+	ph.param<bool>("enable_gesture", enableGesture, true);
+	ROS_INFO("Param set enable_gesture [%d]", enableGesture);
+
+	bool enableVideo;
+	ph.param<bool>("enable_video", enableVideo, false);
+	ROS_INFO("Param set enable_video [%d]", enableVideo);
+
+	// publishers
+	ros::Publisher depthPub = nh.advertise<sensor_msgs::Image>("/camera/depth/image_raw", 1);
+	ros::Publisher rgbPub = nh.advertise<sensor_msgs::Image>("/camera/rgb/image_raw", 1);
+	ros::Publisher depthCameraInfoPub = nh.advertise<sensor_msgs::CameraInfo>("/camera/depth/camera_info", 1);
+	ros::Publisher emotionPub = nh.advertise<std_msgs::String>("/emotion", 1);
+	ros::Publisher faceBiasPub = nh.advertise<geometry_msgs::Point>("/face_bias", 1);
+	ros::Publisher agePub = nh.advertise<std_msgs::Int32>("/age", 1);
+	ros::Publisher gesturePub = nh.advertise<std_msgs::String>("/gesture", 1);
+	ros::Rate loopRate(rate);
 
 	// Create a PXCSenseManager instance
 	PXCSenseManager *sm = PXCSenseManager::CreateInstance();
@@ -173,10 +197,7 @@ int _tmain(int argc, char** argv)
 		// Age estimation
 		FaceSensor::init();
 
-		const char* faceCascadeFile = "C:/opt/vc11/lamda/lib/haarcascade_frontalface_alt.xml";
-		const char* modelFile = "C:/opt/vc11/lamda/lib/aging_model.mat";
-
-		faceSensor = new FaceSensor(modelFile, faceCascadeFile, 1);
+		faceSensor = new FaceSensor(age_model_file.c_str(), face_cascade_file.c_str(), 1);
 	}
 
 	// loop
@@ -324,6 +345,7 @@ int _tmain(int argc, char** argv)
 			if (numOfGesture > 0)
 			{
 				//Iterate fired gestures
+				std::string tmpStr;
 				for (int i = 0; i < numOfGesture; i++)
 				{
 					//Get fired gesture data
@@ -347,6 +369,10 @@ int _tmain(int argc, char** argv)
 						}
 					}
 				}
+				std_msgs::String rosMsg;
+				rosMsg.data = ATL::CW2A(leftRightHand.c_str());
+				rosMsg.data.append(ATL::CW2A(gestureStr.c_str()));
+				gesturePub.publish(rosMsg);
 			}
 		}
 
@@ -358,8 +384,10 @@ int _tmain(int argc, char** argv)
 
 		if (fbs.size() == 1)
 		{
+			std_msgs::Int32 rosInt;
 			gLastAge = fbs[0].getAge();
-			updateAge(gLastAge);
+			rosInt.data = updateAge(gLastAge);
+			agePub.publish(rosInt);
 		}
 
 		if (isViewHands)
@@ -496,7 +524,6 @@ int _tmain(int argc, char** argv)
 	}
 	sm->Close();
 	sm->Release();
-	ROS_INFO("rgbd end!");
 
 	//ros::waitForShutdown();
 	return 0;
