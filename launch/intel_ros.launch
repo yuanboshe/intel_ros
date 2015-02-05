@@ -1,0 +1,15 @@
+<launch>
+  <node pkg="intel_ros" type="voice_synthesis" name="voice_synthesis"  output="screen" />
+  
+  <node pkg="intel_ros" type="voice_rec" name="voice_recognition"  output="screen">
+    <param name="cmd_csv_path" type="string" value="C:/ros_ws_vc11/src/intel_ros/common/commands_en.csv" />
+    <param name="device_id" type="int" value="0" />
+  </node>
+  
+  <node pkg="intel_ros" type="rgbd_all" name="rgbd_all"  output="screen">
+    <param name="rate" type="int" value="10" />
+    <param name="view_image" type="bool" value="true" />
+    <param name="age_model_file" type="string" value="C:/opt/vc11/lamda/lib/aging_model.mat" />
+    <param name="face_cascade_file" type="string" value="C:/opt/vc11/lamda/lib/haarcascade_frontalface_alt.xml" />
+  </node>
+</launch>

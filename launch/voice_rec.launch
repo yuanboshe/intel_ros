@@ -1,6 +1,6 @@
 <launch>
   <node pkg="intel_ros" type="voice_rec" name="voice_recognition"  output="screen">
 	<param name="cmd_csv_path" type="string" value="C:/ros_ws_vc11/src/intel_ros/common/commands_en.csv" />
-	<param name="device_id" type="int" value="1" />
+	<param name="device_id" type="int" value="0" />
   </node>
 </launch>
