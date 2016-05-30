@@ -109,6 +109,10 @@ target_link_libraries(focus_face ${catkin_LIBRARIES})
 
 add_executable(cmd_router nodes/cmd_router.cpp)
 target_link_libraries(cmd_router ${catkin_LIBRARIES})
+
+add_executable(cmd_center2 nodes/cmd_center2.cpp)
+add_dependencies(cmd_center2 ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(cmd_center2 csvparser ${catkin_LIBRARIES})
 ## Declare a cpp library
 # add_library(intel_ros
 #   src/${PROJECT_NAME}/intel_ros.cpp

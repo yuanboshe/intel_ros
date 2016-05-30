@@ -1,0 +1,29 @@
+﻿-1,command,speech,response
+1,test,test,"test OK, I can hear you."
+-2,stop,halt,"OK, halt the status."
+-3,stop,stop,Stop now.
+-4,turn left,turn left,"OK, currently turn left!"
+-5,turn right,turn right,"OK, currently turn right!"
+-6,go straight,go straight,"OK, I'll go straight!"
+-7,go straight,go ahead,"OK, I'll go ahead!"
+-8,backward,go back,"OK, backward!"
+-1,rotate left,rotate left,rotate left
+-1,rotate right,rotate right,rotate right
+-1,reset speed,reset,reset
+-1,go your self,go random,"go ahead, do not block me!"
+-1,time,what is the time,null
+-1,date,what is the date,null
+-9,gopanpan,go to panda,"OK, I'll go there."
+10,goback,come back,"OK, come back right now!"
+-11,gofrontdoor,go to front door,"OK, I'll go to the front door."
+-12,gobackdoor,go to back door,"OK, I'll go to the back door."
+-1,goyutou,yutou,OK，I'm coming
+9,gotoapple,go to apple,"OK, I'll go there."
+9,gotobananar,go to bananar,"OK, I'll go there."
+9,gotopear,go to pear,"OK, I'll go there."
+9,gotodesk,go to desk,"OK, I'll go there."
+-13,come here,come here,"OK, I'm coming"
+14,hello,hello,hello
+15,hello,hello robot,hello
+-16,yes,yes,yes
+-17,no,no,no

@@ -243,7 +243,7 @@ int main(int argc, char **argv)
   authorPub = node.advertise<std_msgs::String>("/cmd_center/author", 1);
   goalVelPub = node.advertise<geometry_msgs::Twist>("/goal_vel", 1);
   goalVelMaskPub = node.advertise<intel_ros::TwistWithMask>("/goal_vel_mask", 1);
-  speaker = node.advertise<std_msgs::String>("voice_syn", 10);
+  speaker = node.advertise<std_msgs::String>("voice_synthesis", 10);
 
   // Get params
   node.param("cmd_center/paused", paused, false);

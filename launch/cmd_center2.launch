@@ -1,0 +1,12 @@
+<!-- Yuanbo She, 2013.8.13 -->
+<launch>
+  <node pkg="intel_ros" name="cmd_center2" type="cmd_center2" output="screen" >
+    <param name="paused" type="bool" value="false" />
+    <param name="rate" type="int" value="5" />
+    <param name="linearSpeed" type="double" value="0.2" />
+    <param name="angularSpeed" type="double" value="0.5" />
+    <param name="linearStep" type="double" value="0.1" />
+    <param name="author" type="string" value="center" />
+    <param name="cmd_csv_path" type="string" value="$(find intel_ros)/include/commands_en.csv" />
+  </node>
+</launch>

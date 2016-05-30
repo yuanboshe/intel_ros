@@ -1,0 +1,5 @@
+<!-- Yuanbo She, 2013.8.15 -->
+<launch>
+  <include file="$(find exbotxi_rviz)/launch/view_navigation.launch" />
+  <include file="$(find intel_ros)/launch/cmd_center2.launch" />
+</launch>
